@@ -1,0 +1,62 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use File::Copy qw(cp);
+
+my @files = @ARGV;
+
+exit unless @files;
+die "pdfcat.pdf exists\n" if -e 'pdfcat.pdf';
+
+my $dir_prefix = "/tmp/pdfcat-$$";
+my $count;
+my $dir_name = $dir_prefix;
+
+while( -e $dir_name) {
+    $count++;
+    $dir_name = "$dir_prefix-$count";
+}
+
+mkdir $dir_name;
+foreach (@files) {
+    cp $_, $dir_name;
+    s|^.*/||;
+}
+
+my $tex_file = "$dir_name/pdfcat.tex";
+
+open(TEX_FILE, ">>$tex_file") or die "can't write '$tex_file': $!";
+
+print TEX_FILE <<'__BEGIN__';
+\documentclass{article}
+\usepackage{pdfpages}
+\begin{document}
+__BEGIN__
+
+print TEX_FILE "\\includepdf{$_}\n" foreach (@files);
+
+print TEX_FILE <<'__FIN__';
+\end{document}
+__FIN__
+
+close TEX_FILE;
+
+system("cd $dir_name; pdflatex $tex_file");
+
+my $pdf_out = "$dir_name/pdfcat.pdf";
+
+if( ! -f $pdf_out) {
+  die "temp outfile '$pdf_out' not created properly\n";
+}
+
+cp($pdf_out, ".");
+
+opendir( TMP_DIR, $dir_name) or die "can't open dir '$dir_name'\n";
+
+while( my $file = readdir TMP_DIR) {
+  next if $file =~ /^\.\.?$/;
+  unlink "$dir_name/$file";
+}
+
+closedir TMP_DIR;
+rmdir $dir_name;

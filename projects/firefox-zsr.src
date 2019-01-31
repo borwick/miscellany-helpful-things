@@ -1,0 +1,14 @@
+<SEARCH
+	version="7.1"
+	name="ZSR Library"
+	description="Wake Forest University Z Smith Reynolds Library"
+	action="http://zsr.wfu.edu/cgi-bin/Pwebrecon.cgi"
+	searchform="http://zsr.wfu.edu"
+	method="GET"
+>
+<input name="DB" value="local">
+<input name="Search_Arg" user="">
+<input name="SL" value="None">
+<input name="Search_Code" value="FT*">
+<input name="CNT" value="25">
+</search>
